@@ -43,7 +43,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
-#include "cat_driver.h"
+//#include "cat_driver.h"
 #include "usb_device.h"
 #include "usbd_composite.h"
 #include "usbd_composite_desc.h"
@@ -95,6 +95,7 @@
   * @{
   */
 
+extern USBD_HandleTypeDef hUsbDeviceFS;
 
 /* Create buffer for reception and transmission           */
 /* It's up to user to redefine and/or remove those define */
@@ -308,7 +309,7 @@ static int8_t CDC_Receive_FS (uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
     for (uint32_t i = 0; i < *Len; i++)
     {
-        CatDriver_InterfaceBufferAddData(Buf[i]);
+//        CatDriver_InterfaceBufferAddData(Buf[i]);
     }
 
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);

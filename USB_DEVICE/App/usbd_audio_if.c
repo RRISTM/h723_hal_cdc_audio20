@@ -44,7 +44,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_audio_if.h"
 /* USER CODE BEGIN INCLUDE */
-#include "uhsdr_board.h"
+//#include "uhsdr_board.h"
 #include "audio_driver.h"
 /* USER CODE END INCLUDE */
 
@@ -224,8 +224,8 @@ void UsbdAudio_FillTxBuffer(AudioSample_t *buffer, uint32_t len)
             // which is weird if on F4 and 32 Bit transfers are done. (mixed endian)
             // for all other systems we scale 16bit USB audio to 32bit
             // on 16 bit audio nothing at  all happens here.
-            buffer->l = I2S_Int16_2_AudioSample(*pkt++);
-            buffer->r = I2S_Int16_2_AudioSample(*pkt++);
+//            buffer->l = I2S_Int16_2_AudioSample(*pkt++);
+//            buffer->r = I2S_Int16_2_AudioSample(*pkt++);
             buffer++;
         }
         audio_out_buffer_pop_pkt(pkt,2*len);

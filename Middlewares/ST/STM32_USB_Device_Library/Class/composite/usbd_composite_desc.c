@@ -62,8 +62,8 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include <drivers/usb/device/class/composite/usbd_composite.h>
-#include <drivers/usb/device/class/composite/usbd_composite_desc.h>
+#include "usbd_composite.h"
+#include "usbd_composite_desc.h"
 #include "usbd_desc.h"
 #include "usbd_ctlreq.h"
 #include "uhsdr_board.h"

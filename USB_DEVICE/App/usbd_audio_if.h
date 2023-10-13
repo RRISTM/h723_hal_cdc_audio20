@@ -52,7 +52,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_audio_cdc_comp.h"
 /* USER CODE BEGIN INCLUDE */
-#include "audio_driver.h"
+//#include "audio_driver.h"
 /* USER CODE END INCLUDE */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -125,6 +125,8 @@
 
 /* USER CODE BEGIN EXPORTED_FUNCTIONS */
   extern void UsbdAudio_PutSample(int16_t sample);
+
+#define AudioSample_t uint16_t
   void UsbdAudio_FillTxBuffer(AudioSample_t *buffer, uint32_t len);
 /* USER CODE END EXPORTED_FUNCTIONS */
 /**
