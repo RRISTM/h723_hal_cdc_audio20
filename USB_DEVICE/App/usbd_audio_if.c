@@ -1,139 +1,129 @@
+/* USER CODE BEGIN Header */
 /**
- ******************************************************************************
- * @file           : usbd_audio_if.c
- * @brief          : Generic media access Layer.
- ******************************************************************************
- *
- * Copyright (c) 2017 STMicroelectronics International N.V.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted, provided that the following conditions are met:
- *
- * 1. Redistribution of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 3. Neither the name of STMicroelectronics nor the names of other
- *    contributors to this software may be used to endorse or promote products
- *    derived from this software without specific written permission.
- * 4. This software, including modifications and/or derivative works of this
- *    software, must execute solely and exclusively on microcontroller or
- *    microprocessor devices manufactured by or for STMicroelectronics.
- * 5. Redistribution and use of this software other than as permitted under
- *    this license is void and will automatically terminate your rights under
- *    this license.
- *
- * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
- * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT
- * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file           : usbd_audio_if.c
+  * @version        : v1.0_Cube
+  * @brief          : Generic media access layer.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
+ /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_audio_if.h"
+
 /* USER CODE BEGIN INCLUDE */
 //#include "uhsdr_board.h"
-#include "audio_driver.h"
+//#include "audio_driver.h"
 /* USER CODE END INCLUDE */
 
+/* Private typedef -----------------------------------------------------------*/
+/* Private define ------------------------------------------------------------*/
+/* Private macro -------------------------------------------------------------*/
+
+/* USER CODE BEGIN PV */
+/* Private variables ---------------------------------------------------------*/
+
+/* USER CODE END PV */
+
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
- * @{
- */
+  * @brief Usb device library.
+  * @{
+  */
 
-/** @defgroup USBD_AUDIO 
- * @brief usbd core module
- * @{
- */
+/** @addtogroup USBD_AUDIO_IF
+  * @{
+  */
 
-/** @defgroup USBD_AUDIO_Private_TypesDefinitions
- * @{
- */
+/** @defgroup USBD_AUDIO_IF_Private_TypesDefinitions USBD_AUDIO_IF_Private_TypesDefinitions
+  * @brief Private types.
+  * @{
+  */
+
 /* USER CODE BEGIN PRIVATE_TYPES */
-/* USER CODE END PRIVATE_TYPES */ 
-/**
- * @}
- */
+/* USER CODE END PRIVATE_TYPES */
 
-/** @defgroup USBD_AUDIO_Private_Defines
- * @{
- */
+/**
+  * @}
+  */
+
+/** @defgroup USBD_AUDIO_IF_Private_Defines USBD_AUDIO_IF_Private_Defines
+  * @brief Private defines.
+  * @{
+  */
+
 /* USER CODE BEGIN PRIVATE_DEFINES */
 /* USER CODE END PRIVATE_DEFINES */
 
 /**
- * @}
- */
+  * @}
+  */
 
-/** @defgroup USBD_AUDIO_Private_Macros
- * @{
- */
+/** @defgroup USBD_AUDIO_IF_Private_Macros USBD_AUDIO_IF_Private_Macros
+  * @brief Private macros.
+  * @{
+  */
+
 /* USER CODE BEGIN PRIVATE_MACRO */
 /* USER CODE END PRIVATE_MACRO */
 
 /**
- * @}
- */
+  * @}
+  */
 
-/** @defgroup USBD_AUDIO_IF_Private_Variables
- * @{
- */
+/** @defgroup USBD_AUDIO_IF_Private_Variables USBD_AUDIO_IF_Private_Variables
+  * @brief Private variables.
+  * @{
+  */
+
 /* USER CODE BEGIN PRIVATE_VARIABLES */
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
- * @}
- */
+  * @}
+  */
 
-/** @defgroup USBD_AUDIO_IF_Exported_Variables
- * @{
- */
-extern USBD_HandleTypeDef hUsbDeviceFS;
+/** @defgroup USBD_AUDIO_IF_Exported_Variables USBD_AUDIO_IF_Exported_Variables
+  * @brief Public variables.
+  * @{
+  */
+
+extern USBD_HandleTypeDef hUsbDeviceHS;
+
 /* USER CODE BEGIN EXPORTED_VARIABLES */
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
- * @}
- */
+  * @}
+  */
 
-/** @defgroup USBD_AUDIO_Private_FunctionPrototypes
- * @{
- */
-static int8_t  AUDIO_Init_FS         (uint32_t  AudioFreq, uint32_t Volume, uint32_t options);
-static int8_t  AUDIO_DeInit_FS       (uint32_t options);
-static int8_t  AUDIO_AudioCmd_FS     (uint8_t* pbuf, uint32_t size, uint8_t cmd);
-static int8_t  AUDIO_VolumeCtl_FS    (uint8_t vol);
-static int8_t  AUDIO_MuteCtl_FS      (uint8_t cmd);
-static int8_t  AUDIO_PeriodicTC_FS   (uint8_t cmd);
-static int8_t  AUDIO_GetState_FS     (void);
-static int8_t  AUDIO_InVolumeCtl_FS  (uint8_t vol);
+/** @defgroup USBD_AUDIO_IF_Private_FunctionPrototypes USBD_AUDIO_IF_Private_FunctionPrototypes
+  * @brief Private functions declaration.
+  * @{
+  */
 
-
-/* Audio Machine States */
-typedef enum
-{
-    AUDIO_STATE_INACTIVE =           0x00,
-    AUDIO_STATE_ACTIVE,
-    AUDIO_STATE_PLAYING,
-    AUDIO_STATE_PAUSED,
-    AUDIO_STATE_STOPPED,
-    AUDIO_STATE_ERROR
-} USB_AUDIO_MACHINE_State_t;
-
-
+static int8_t AUDIO_Init_HS(uint32_t AudioFreq, uint32_t Volume, uint32_t options);
+static int8_t AUDIO_DeInit_HS(uint32_t options);
+static int8_t AUDIO_AudioCmd_HS(uint8_t* pbuf, uint32_t size, uint8_t cmd);
+static int8_t AUDIO_VolumeCtl_HS(uint8_t vol);
+static int8_t AUDIO_MuteCtl_HS(uint8_t cmd);
+static int8_t AUDIO_PeriodicTC_HS(uint8_t *pbuf, uint32_t size, uint8_t cmd);
+static int8_t AUDIO_GetState_HS(void);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
+#define AUDIO_STATE_INACTIVE 0
+typedef  uint32_t USB_AUDIO_MACHINE_State_t;
+
+
 static USB_AUDIO_MACHINE_State_t AudioState = AUDIO_STATE_INACTIVE;
 
 typedef enum
@@ -244,8 +234,8 @@ void UsbdAudio_FillTxBuffer(AudioSample_t *buffer, uint32_t len)
         // Deliver silence if not enough data is stored in buffer
         for (uint32_t idx = len; idx; idx--)
         {
-            buffer->l = 0;
-            buffer->r = 0;
+//            buffer->l = 0;
+//            buffer->r = 0;
             buffer++;
         }
     }
@@ -254,264 +244,157 @@ void UsbdAudio_FillTxBuffer(AudioSample_t *buffer, uint32_t len)
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
 /**
- * @}
- */
+  * @}
+  */
 
-USBD_AUDIO_ItfTypeDef USBD_AUDIO_fops_FS = 
+USBD_AUDIO_ItfTypeDef USBD_AUDIO_fops_HS =
 {
-        AUDIO_Init_FS,
-        AUDIO_DeInit_FS,
-        AUDIO_AudioCmd_FS,
-        AUDIO_VolumeCtl_FS,
-        AUDIO_MuteCtl_FS,
-        AUDIO_PeriodicTC_FS,
-        AUDIO_GetState_FS,
-        AUDIO_InVolumeCtl_FS,
+  AUDIO_Init_HS,
+  AUDIO_DeInit_HS,
+  AUDIO_AudioCmd_HS,
+  AUDIO_VolumeCtl_HS,
+  AUDIO_MuteCtl_HS,
+  AUDIO_PeriodicTC_HS,
+  AUDIO_GetState_HS,
 };
 
 /* Private functions ---------------------------------------------------------*/
 /**
- * @brief  AUDIO_Init_FS
- *         Initializes the AUDIO media low layer over USB FS IP
- * @param  AudioFreq: Audio frequency used to play the audio stream.
- * @param  Volume: Initial volume level (from 0 (Mute) to 100 (Max))
- * @param  options: Reserved for future use
- * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
- */
-static int8_t AUDIO_Init_FS(uint32_t  AudioFreq, uint32_t Volume, uint32_t options)
-{ 
-    /* USER CODE BEGIN 0 */
-    AudioState = AUDIO_STATE_ACTIVE;
-    return (USBD_OK);
-    /* USER CODE END 0 */
+  * @brief  Initializes the AUDIO media low layer over the USB HS IP
+  * @param  AudioFreq: Audio frequency used to play the audio stream.
+  * @param  Volume: Initial volume level (from 0 (Mute) to 100 (Max))
+  * @param  options: Reserved for future use
+  * @retval USBD_OK if all operations are OK else USBD_FAIL
+  */
+static int8_t AUDIO_Init_HS(uint32_t AudioFreq, uint32_t Volume, uint32_t options)
+{
+  /* USER CODE BEGIN 9 */
+  UNUSED(AudioFreq);
+  UNUSED(Volume);
+  UNUSED(options);
+  return (USBD_OK);
+  /* USER CODE END 9 */
 }
 
 /**
- * @brief  AUDIO_DeInit_FS
- *         DeInitializes the AUDIO media low layer
- * @param  options: Reserved for future use
- * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
- */
-static int8_t AUDIO_DeInit_FS(uint32_t options)
+  * @brief  DeInitializes the AUDIO media low layer
+  * @param  options: Reserved for future use
+  * @retval USBD_OK if all operations are OK else USBD_FAIL
+  */
+static int8_t AUDIO_DeInit_HS(uint32_t options)
 {
-    /* USER CODE BEGIN 1 */
-    AudioState = AUDIO_STATE_INACTIVE;
-    return (USBD_OK);
-    /* USER CODE END 1 */
+  /* USER CODE BEGIN 10 */
+  UNUSED(options);
+  return (USBD_OK);
+  /* USER CODE END 10 */
 }
 
 /**
- * @brief  AUDIO_AudioCmd_FS
- *         Handles AUDIO command.
- * @param  pbuf: Pointer to buffer of data to be sent
- * @param  size: Number of data to be sent (in bytes)
- * @param  cmd: Command opcode
- * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
- */
-
-static uint16_t fill;
-
-static int8_t AUDIO_AudioCmd_FS (uint8_t* pbuf, uint32_t size, uint8_t cmd)
+  * @brief  Handles AUDIO command.
+  * @param  pbuf: Pointer to buffer of data to be sent
+  * @param  size: Number of data to be sent (in bytes)
+  * @param  cmd: Command opcode
+  * @retval USBD_OK if all operations are OK else USBD_FAIL
+  */
+static int8_t AUDIO_AudioCmd_HS(uint8_t* pbuf, uint32_t size, uint8_t cmd)
 {
-    /* USER CODE BEGIN 2 */
-    /* Check the current state */
-    if ((AudioState == AUDIO_STATE_INACTIVE) || (AudioState == AUDIO_STATE_ERROR))
-    {
-        AudioState = AUDIO_STATE_ERROR;
-        return USBD_FAIL;
-    }
-
-    switch (cmd)
-    {
-    /* Process the PLAY command ----------------------------*/
+  /* USER CODE BEGIN 11 */
+  switch(cmd)
+  {
     case AUDIO_CMD_START:
+    break;
+
     case AUDIO_CMD_PLAY:
-        /* If current state is Active or Stopped */
-        if ((AudioState == AUDIO_STATE_ACTIVE) || \
-                (AudioState == AUDIO_STATE_STOPPED) || \
-                (AudioState == AUDIO_STATE_PAUSED) || \
-                (AudioState == AUDIO_STATE_PLAYING))
-        {
-
-
-            if ((ts.txrx_mode == TRX_MODE_RX && (ts.rx_iq_source == RX_IQ_DIG || ts.rx_iq_source == RX_IQ_DIGIQ))
-                || (ts.txrx_mode == TRX_MODE_TX && (ts.tx_audio_source == TX_AUDIO_DIG || ts.tx_audio_source == TX_AUDIO_DIGIQ)))
-            {
-                uint16_t* pkt = (uint16_t*)pbuf;
-                uint32_t count;
-                static bool too_high = false;
-
-                fill =  audio_out_buffer_fill();
-                // USB_AUDIO_OUT_NUM_BUF * USB_AUDIO_OUT_PKT_SIZE
-                bool is_low_space = fill > (3*(USB_AUDIO_OUT_NUM_BUF/4) * USB_AUDIO_OUT_PKT_SIZE);
-                bool is_high_space = fill < (USB_AUDIO_OUT_NUM_BUF/4 * USB_AUDIO_OUT_PKT_SIZE);
-                bool is_high_ok = fill > (3*(USB_AUDIO_OUT_NUM_BUF/4) * USB_AUDIO_OUT_PKT_SIZE);
-                // bool is_low_ok = fill < ((USB_AUDIO_OUT_NUM_BUF/4) * USB_AUDIO_OUT_PKT_SIZE);
-
-                uint16_t num_samples = size/2;
-
-                if (is_high_ok)
-                {
-                    too_high = false;
-                } else  {
-                    too_high = is_high_space;
-                }
-
-
-                if (is_low_space)
-                {
-                    num_samples-=2;
-                }
-                for (count =0; count < num_samples; count++)
-                {
-                    audio_out_put_buffer(pkt[count]);
-                }
-                if (too_high)
-                {
-                    audio_out_put_buffer(pkt[num_samples-2]);
-                    audio_out_put_buffer(pkt[num_samples-1]);
-                }
-
-            }
-            AudioState = AUDIO_STATE_PLAYING;
-            return USBD_OK;
-        }
-        else /* Not allowed command */
-        {
-            return USBD_FAIL;
-        }
-        break;
-
-    /* Process the STOP command ----------------------------*/
-    case AUDIO_CMD_STOP:
-        if (AudioState != AUDIO_STATE_PLAYING)
-        {
-            /* Unsupported command */
-            return USBD_FAIL;
-        }
-        else
-        {
-            AudioState = AUDIO_STATE_STOPPED;
-            return USBD_OK;
-        }
-
-    /* Process the PAUSE command ---------------------------*/
-    case AUDIO_CMD_PAUSE:
-        if (AudioState != AUDIO_STATE_PLAYING)
-        {
-            /* Unsupported command */
-            return USBD_FAIL;
-        }
-        else
-        {
-            AudioState = AUDIO_STATE_PAUSED;
-            return USBD_OK;
-        }
-
-    /* Unsupported command ---------------------------------*/
-    default:
-        return USBD_FAIL;
-    }
-    return USBD_OK;
-    /* USER CODE END 2 */
-
+    break;
+  }
+  UNUSED(pbuf);
+  UNUSED(size);
+  UNUSED(cmd);
+  return (USBD_OK);
+  /* USER CODE END 11 */
 }
 
 /**
- * @brief  AUDIO_VolumeCtl_FS
- *         Controls AUDIO Volume.
- * @param  vol: volume level (0..100)
- * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
- */
-static int8_t AUDIO_VolumeCtl_FS (uint8_t vol)
+  * @brief  Controls AUDIO Volume.
+  * @param  vol: volume level (0..100)
+  * @retval USBD_OK if all operations are OK else USBD_FAIL
+  */
+static int8_t AUDIO_VolumeCtl_HS(uint8_t vol)
 {
-    /* USER CODE BEGIN 3 */
-    uint16_t source = ts.tx_audio_source == TX_AUDIO_DIGIQ?TX_AUDIO_DIGIQ:TX_AUDIO_DIG;
-    ts.tx_gain[source] = vol;
-    return (USBD_OK);
-    /* USER CODE END 3 */
+  /* USER CODE BEGIN 12 */
+  UNUSED(vol);
+  return (USBD_OK);
+  /* USER CODE END 12 */
 }
 
 /**
- * @brief  AUDIO_MuteCtl_FS
- *         Controls AUDIO Mute.
- * @param  cmd: command opcode
- * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
- */
-static int8_t AUDIO_MuteCtl_FS (uint8_t cmd)
+  * @brief  Controls AUDIO Mute.
+  * @param  cmd: command opcode
+  * @retval USBD_OK if all operations are OK else USBD_FAIL
+  */
+static int8_t AUDIO_MuteCtl_HS(uint8_t cmd)
 {
-    /* USER CODE BEGIN 4 */
-    return (USBD_OK);
-    /* USER CODE END 4 */
+  /* USER CODE BEGIN 13 */
+  UNUSED(cmd);
+  return (USBD_OK);
+  /* USER CODE END 13 */
 }
 
 /**
- * @brief  AUDIO_PeriodicT_FS
- * @param  cmd: Command opcode
- * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
- */
-static int8_t AUDIO_PeriodicTC_FS (uint8_t cmd)
+  * @brief  AUDIO_PeriodicTC_HS
+  * @param  cmd: command opcode
+  * @retval USBD_OK if all operations are OK else USBD_FAIL
+  */
+static int8_t AUDIO_PeriodicTC_HS(uint8_t *pbuf, uint32_t size, uint8_t cmd)
 {
-    /* USER CODE BEGIN 5 */
-    return (USBD_OK);
-    /* USER CODE END 5 */
+  /* USER CODE BEGIN 14 */
+  UNUSED(pbuf);
+  UNUSED(size);
+  UNUSED(cmd);
+  return (USBD_OK);
+  /* USER CODE END 14 */
 }
 
 /**
- * @brief  AUDIO_GetState_FS
- *         Gets AUDIO State.
- * @param  None
- * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
- */
-static int8_t AUDIO_GetState_FS (void)
+  * @brief  Gets AUDIO state.
+  * @retval USBD_OK if all operations are OK else USBD_FAIL
+  */
+static int8_t AUDIO_GetState_HS(void)
 {
-    /* USER CODE BEGIN 6 */
-    return (USBD_OK);
-    /* USER CODE END 6 */
+  /* USER CODE BEGIN 15 */
+  return (USBD_OK);
+  /* USER CODE END 15 */
 }
 
-#if 0
 /**
- * @brief  Manages the DMA full Transfer complete event.
- * @param  None
- * @retval None
- */
-void TransferComplete_CallBack_FS(void)
+  * @brief  Manages the DMA full transfer complete event.
+  * @retval None
+  */
+void TransferComplete_CallBack_HS(void)
 {
-    /* USER CODE BEGIN 7 */
-    USBD_AUDIO_Sync(&hUsbDeviceFS, AUDIO_OFFSET_FULL);
-    /* USER CODE END 7 */
+  /* USER CODE BEGIN 16 */
+  USBD_AUDIO_Sync(&hUsbDeviceHS, AUDIO_OFFSET_FULL);
+  /* USER CODE END 16 */
 }
 
 /**
- * @brief  Manages the DMA Half Transfer complete event.
- * @param  None
- * @retval None
- */
-void HalfTransfer_CallBack_FS(void)
-{ 
-    /* USER CODE BEGIN 8 */
-    USBD_AUDIO_Sync(&hUsbDeviceFS, AUDIO_OFFSET_HALF);
-    /* USER CODE END 8 */
+  * @brief  Manages the DMA Half transfer complete event.
+  * @retval None
+  */
+void HalfTransfer_CallBack_HS(void)
+{
+  /* USER CODE BEGIN 17 */
+  USBD_AUDIO_Sync(&hUsbDeviceHS, AUDIO_OFFSET_HALF);
+  /* USER CODE END 17 */
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
-#endif
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-static int8_t  AUDIO_InVolumeCtl_FS    (uint8_t vol)
-{
-    /* Call low layer volume setting function */
-    ts.rx_gain[RX_AUDIO_DIG].value = vol;
-    return USBD_OK;
-}
-
+  * @}
+  */
