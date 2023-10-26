@@ -61,7 +61,7 @@ extern "C" {
 #define AUDIO_OUT_EP                                  0x03U
 #endif /* AUDIO_OUT_EP */
 
-#define USB_AUDIO_CONFIG_DESC_SIZ                     0x6DU
+#define USB_AUDIO_CONFIG_DESC_SIZ                     0xc6U
 #define AUDIO_INTERFACE_DESC_SIZE                     0x09U
 #define USB_AUDIO_DESC_SIZ                            0x09U
 #define AUDIO_STANDARD_ENDPOINT_DESC_SIZE             0x09U
@@ -113,6 +113,66 @@ extern "C" {
 #define AUDIO_OUT_PACKET_NUM                          80U
 /* Total size of the audio transfer buffer */
 #define AUDIO_TOTAL_BUF_SIZE                          ((uint16_t)(AUDIO_OUT_PACKET * AUDIO_OUT_PACKET_NUM))
+
+
+#define AUDIO_DESCRIPTOR_TYPE                         0x21
+#define USB_DEVICE_CLASS_AUDIO                        0x01
+#define AUDIO_SUBCLASS_AUDIOCONTROL                   0x01
+#define AUDIO_SUBCLASS_AUDIOSTREAMING                 0x02
+#define AUDIO_PROTOCOL_UNDEFINED                      0x00
+#define AUDIO_STREAMING_GENERAL                       0x01
+#define AUDIO_STREAMING_FORMAT_TYPE                   0x02
+
+/* Audio Descriptor Types */
+#define AUDIO_INTERFACE_DESCRIPTOR_TYPE               0x24
+#define AUDIO_ENDPOINT_DESCRIPTOR_TYPE                0x25
+
+/* Audio Control Interface Descriptor Subtypes */
+#define AUDIO_CONTROL_HEADER                          0x01
+#define AUDIO_CONTROL_INPUT_TERMINAL                  0x02
+#define AUDIO_CONTROL_OUTPUT_TERMINAL                 0x03
+#define AUDIO_CONTROL_FEATURE_UNIT                    0x06
+
+#define AUDIO_INTERFACE_DESC_SIZE                     9
+#define USB_AUDIO_DESC_SIZ                            0x09
+#define AUDIO_STANDARD_ENDPOINT_DESC_SIZE             0x09
+#define AUDIO_STREAMING_ENDPOINT_DESC_SIZE            0x07
+
+#define AUDIO_SAMPLE_FREQ(frq)      (uint8_t)(frq), (uint8_t)((frq >> 8)), (uint8_t)((frq >> 16))
+#define AUDIO_IN_PACKET                              (uint32_t)(((USBD_AUDIO_IN_FREQ * USBD_AUDIO_IN_CHANNELS * 2) /1000))
+#define AUDIO_PACKET_SZE(frq,channels)          (uint8_t)(((frq * channels * 2)/1000) & 0xFF), \
+                                       (uint8_t)((((frq * channels * 2)/1000) >> 8) & 0xFF)
+#define SAMPLE_FREQ(frq)               (uint8_t)(frq), (uint8_t)((frq >> 8)), (uint8_t)((frq >> 16))
+
+
+#define USB_INTERFACE_ASSOCIATION_DESCRIPTOR_TYPE 0x0B
+#define USB_INTERFACE_ASSOCIATION_DESC_SIZE 0x08
+
+
+#define USB_DEVICE_DESCRIPTOR_TYPE              0x01
+#define USB_CONFIGURATION_DESCRIPTOR_TYPE       0x02
+#define USB_STRING_DESCRIPTOR_TYPE              0x03
+#define USB_INTERFACE_DESCRIPTOR_TYPE           0x04
+#define USB_ENDPOINT_DESCRIPTOR_TYPE            0x05
+
+#define STANDARD_ENDPOINT_DESC_SIZE             0x09
+
+#define USB_ENDPOINT_TYPE_ISOCHRONOUS                 0x01
+#define AUDIO_ENDPOINT_GENERAL                        0x01
+
+#define AUDIO_INPUT_TERMINAL_DESC_SIZE                0x0C
+#define AUDIO_OUTPUT_TERMINAL_DESC_SIZE               0x09
+#define AUDIO_STREAMING_INTERFACE_DESC_SIZE           0x07
+
+#define AUDIO_CONTROL_MUTE                            0x0001
+#define AUDIO_CONTROL_VOLUME                          0x0002
+
+#define AUDIO_OUT_EP                0x02
+#define AUDIO_IN_EP                 0x83
+#define AUDIO_CTRL_IF               0x02
+#define AUDIO_OUT_IF                0x03
+#define AUDIO_IN_IF                 0x04
+#define AUDIO_TOTAL_IF_NUM          0x03
 
 /* Audio Commands enumeration */
 typedef enum

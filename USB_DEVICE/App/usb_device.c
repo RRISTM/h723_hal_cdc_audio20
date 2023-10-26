@@ -49,7 +49,7 @@ USBD_HandleTypeDef hUsbDeviceHS;
  */
 /* USER CODE BEGIN 0 */
 uint8_t cdc_ep[3]={0x81,0x1,0x82};
-uint8_t audio_ep[]={0x03};
+uint8_t audio_ep[]={0x03,0x83};
 /* USER CODE END 0 */
 
 /*
