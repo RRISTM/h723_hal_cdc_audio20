@@ -134,7 +134,7 @@ extern "C" {
 /* This is the maximum supported configuration descriptor size
    User may define this value in usbd_conf.h in order to optimize footprint */
 #ifndef USBD_CMPST_MAX_CONFDESC_SZ
-#define USBD_CMPST_MAX_CONFDESC_SZ                         300U
+#define USBD_CMPST_MAX_CONFDESC_SZ                         400U
 #endif /* USBD_CMPST_MAX_CONFDESC_SZ */
 
 #ifndef USBD_CONFIG_STR_DESC_IDX
@@ -168,6 +168,115 @@ typedef struct
   uint8_t           bInterfaceProtocol;
   uint8_t           iInterface;
 } USBD_IfDescTypeDef;
+
+typedef struct
+{
+  /* Header Functional Descriptor*/
+  uint8_t bLength;
+  uint8_t bDescriptorType;
+  uint8_t bDescriptorSubtype;
+  uint16_t bcdADC;
+  uint8_t bCategory;
+  uint16_t wTotalLength;
+  uint8_t bmControls;
+} __PACKED USBD_AUDIOHeaderFuncDescTypedef;
+
+typedef struct
+{
+  /* Audio clock source Descriptor*/
+  uint8_t bLength;
+  uint8_t bDescriptorType;
+  uint8_t bDescriptorSubtype;
+  uint8_t bClockID;
+  uint8_t bmAttributes;
+  uint8_t bmControls;
+  uint8_t bAssocTerminal;
+  uint8_t iClockSource;
+} __PACKED USBD_AUDIOClockSourceDescTypedef;
+
+typedef struct
+{
+  /* Audio input terminal Descriptor*/
+  uint8_t bLength;
+  uint8_t bDescriptorType;
+  uint8_t bDescriptorSubtype;
+  uint8_t bTerminalID; 
+  uint16_t wTerminalType ;
+  uint8_t bAssocTerminal;
+  uint8_t bCSourceID ;
+  uint8_t bNrChannels ;
+  uint32_t bmChannelConfig;
+  uint8_t iChannelNames;
+  uint16_t bmControls;
+  uint8_t iTerminal; 
+} __PACKED USBD_AUDIOInputTerminalDescTypedef;
+
+typedef struct
+{
+  /* Audio feature unit Descriptor*/
+  uint8_t bLength;
+  uint8_t bDescriptorType;
+  uint8_t bDescriptorSubtype;
+  uint8_t bUnitID;
+  uint8_t bSourceID; 
+  uint32_t bmaControls0;
+  uint32_t bmaControls1;
+  uint32_t bmaControls2;
+  uint8_t  iFeature; 
+} __PACKED USBD_AUDIOFeatureUnitDescTypedef;
+
+typedef struct
+{
+  /* Audio output terminal Descriptor*/
+  uint8_t bLength;
+  uint8_t bDescriptorType;
+  uint8_t bDescriptorSubtype;
+  uint8_t bTerminalID; 
+  uint16_t wTerminalType;
+  uint8_t bAssocTerminal;
+  uint8_t bSourceID;
+  uint8_t bCSourceID;
+  uint16_t bmControls;
+  uint8_t iTerminal; 
+} __PACKED USBD_AUDIOOutputTerminalDescTypedef;
+
+typedef struct
+{
+  /* Audio 20 AS Interface Descriptor*/
+  uint8_t bLength;
+  uint8_t bDescriptorType;
+  uint8_t bDescriptorSubtype;
+  uint8_t bTerminalLink;
+  uint8_t bmControls;
+  uint8_t bFormatType;
+  uint32_t bmFormats;
+  uint8_t bNrChannels;
+  uint32_t bmChannelConfig;
+  uint8_t iChannelNames;
+} __PACKED USBD_AUDIO20ASInterfaceDescTypedef;
+
+typedef struct
+{
+  /* Audio 20 as format type Descriptor*/
+  uint8_t bLength;
+  uint8_t bDescriptorType;
+  uint8_t bDescriptorSubtype;
+  uint8_t bFormatType;
+  uint8_t bSubslotSize;
+  uint8_t bBitResolution;
+} __PACKED USBD_AUDIO20ASFormatTypeDescTypedef;
+
+typedef struct
+{
+  /* Audio 20 as format type Descriptor*/
+  uint8_t bLength;
+  uint8_t bDescriptorType;
+  uint8_t bDescriptorSubtype;
+  uint8_t bmAttributes;
+  uint8_t bmControl;
+  uint8_t bLockDelayUnits;
+  uint16_t wLockDelay;
+} __PACKED USBD_AUDIO20ASEndpointDescTypedef;
 
 #if (USBD_CMPSIT_ACTIVATE_CDC == 1) || (USBD_CMPSIT_ACTIVATE_RNDIS == 1) || (USBD_CMPSIT_ACTIVATE_CDC_ECM == 1)
 typedef struct

@@ -167,7 +167,7 @@ extern "C" {
 #define AUDIO_CONTROL_MUTE                            0x0001
 #define AUDIO_CONTROL_VOLUME                          0x0002
 
-#define AUDIO_OUT_EP                0x02
+#define AUDIO_OUT_EP                0x03
 #define AUDIO_IN_EP                 0x83
 #define AUDIO_CTRL_IF               0x02
 #define AUDIO_OUT_IF                0x03

@@ -480,13 +480,19 @@ uint8_t  USBD_CMPSIT_AddToConfDesc(USBD_HandleTypeDef *pdev)
       pdev->tclasslist[pdev->classId].NumIf = 2U;
       pdev->tclasslist[pdev->classId].Ifs[0] = idxIf;
       pdev->tclasslist[pdev->classId].Ifs[1] = (uint8_t)(idxIf + 1U);
+      pdev->tclasslist[pdev->classId].Ifs[2] = (uint8_t)(idxIf + 2U);
 
       /* Assign endpoint numbers */
-      pdev->tclasslist[pdev->classId].NumEps = 1U; /* EP1_OUT*/
+      pdev->tclasslist[pdev->classId].NumEps = 2U; /* EP1_OUT*/
 
       /* Set OUT endpoint slot */
       iEp = pdev->tclasslist[pdev->classId].EpAdd[0];
 
+      /* Assign OUT Endpoint */
+      USBD_CMPSIT_AssignEp(pdev, iEp, USBD_EP_TYPE_ISOC, pdev->tclasslist[pdev->classId].CurrPcktSze);
+
+      /* Set in endpoint slot */
+      iEp = pdev->tclasslist[pdev->classId].EpAdd[1];
       /* Assign OUT Endpoint */
       USBD_CMPSIT_AssignEp(pdev, iEp, USBD_EP_TYPE_ISOC, pdev->tclasslist[pdev->classId].CurrPcktSze);
 
@@ -1130,143 +1136,247 @@ static void  USBD_CMPSIT_AUDIODesc(USBD_HandleTypeDef *pdev, uint32_t pConf, __I
 {
   static USBD_IfDescTypeDef *pIfDesc;
   static USBD_IadDescTypeDef *pIadDesc;
+  static USBD_EpDescTypeDef             *pEpDesc;
   UNUSED(speed);
 
-  /* Append AUDIO Interface descriptor to Configuration descriptor */
-  USBD_SpeakerIfDescTypeDef            *pSpIfDesc;
-  USBD_SpeakerInDescTypeDef            *pSpInDesc;
-  USBD_SpeakerFeatureDescTypeDef       *pSpFDesc;
-  USBD_SpeakerOutDescTypeDef           *pSpOutDesc;
-  USBD_SpeakerStreamIfDescTypeDef      *pSpStrDesc;
-  USBD_SpeakerIIIFormatIfDescTypeDef   *pSpIIIDesc;
-  USBD_SpeakerEndDescTypeDef           *pSpEpDesc;
-  USBD_SpeakerEndStDescTypeDef         *pSpEpStDesc;
+  static USBD_AUDIOHeaderFuncDescTypedef    *pHeadDesc;
+  static USBD_AUDIOClockSourceDescTypedef  *pClockDesc;
+  static USBD_AUDIOInputTerminalDescTypedef *pInputTerminalDesc;
+  static USBD_AUDIOFeatureUnitDescTypedef *pFeatureUnitDesc;
+  static USBD_AUDIOOutputTerminalDescTypedef *pOutputTerminalDesc;
+  static USBD_AUDIO20ASInterfaceDescTypedef *pAsInterfaceDesc;
+  static USBD_AUDIO20ASFormatTypeDescTypedef *pAsFormatTypeDesc;
+  static USBD_AUDIO20ASEndpointDescTypedef *pAsEndpointDesc;
 
 #if USBD_COMPOSITE_USE_IAD == 1
   pIadDesc                          = ((USBD_IadDescTypeDef *)(pConf + *Sze));
   pIadDesc->bLength                 = (uint8_t)sizeof(USBD_IadDescTypeDef);
   pIadDesc->bDescriptorType         = USB_DESC_TYPE_IAD; /* IAD descriptor */
   pIadDesc->bFirstInterface         = pdev->tclasslist[pdev->classId].Ifs[0];
-  pIadDesc->bInterfaceCount         = 2U;    /* 2 interfaces */
+  pIadDesc->bInterfaceCount         = 3U;    /* 2 interfaces */
   pIadDesc->bFunctionClass          = USB_DEVICE_CLASS_AUDIO;
   pIadDesc->bFunctionSubClass       = AUDIO_SUBCLASS_AUDIOCONTROL;
-  pIadDesc->bFunctionProtocol       = AUDIO_PROTOCOL_UNDEFINED;
+  pIadDesc->bFunctionProtocol       = 0x20;
   pIadDesc->iFunction               = 0U; /* String Index */
   *Sze                             += (uint32_t)sizeof(USBD_IadDescTypeDef);
 #endif /* USBD_COMPOSITE_USE_IAD == 1 */
 
   /* Append AUDIO Interface descriptor to Configuration descriptor */
   __USBD_CMPSIT_SET_IF(pdev->tclasslist[pdev->classId].Ifs[0], 0U, 0U, USB_DEVICE_CLASS_AUDIO, \
-                       AUDIO_SUBCLASS_AUDIOCONTROL, AUDIO_PROTOCOL_UNDEFINED, 0U);
+                       AUDIO_SUBCLASS_AUDIOCONTROL, 0x020, 0U);
 
-  /* Append AUDIO USB Speaker Class-specific AC Interface descriptor to Configuration descriptor */
-  pSpIfDesc = ((USBD_SpeakerIfDescTypeDef *)(pConf + *Sze));
-  pSpIfDesc->bLength = (uint8_t)sizeof(USBD_IfDescTypeDef);
-  pSpIfDesc->bDescriptorType = AUDIO_INTERFACE_DESCRIPTOR_TYPE;
-  pSpIfDesc->bDescriptorSubtype = AUDIO_CONTROL_HEADER;
-  pSpIfDesc->bcdADC = 0x0100U;
-  pSpIfDesc->wTotalLength = 0x0027U;
-  pSpIfDesc->bInCollection = 0x01U;
-  pSpIfDesc->baInterfaceNr = 0x01U;
-  *Sze += (uint32_t)sizeof(USBD_IfDescTypeDef);
 
-  /* Append USB Speaker Input Terminal Descriptor to Configuration descriptor*/
-  pSpInDesc = ((USBD_SpeakerInDescTypeDef *)(pConf + *Sze));
-  pSpInDesc->bLength = (uint8_t)sizeof(USBD_SpeakerInDescTypeDef);
-  pSpInDesc->bDescriptorType = AUDIO_INTERFACE_DESCRIPTOR_TYPE;
-  pSpInDesc->bDescriptorSubtype = AUDIO_CONTROL_INPUT_TERMINAL;
-  pSpInDesc->bTerminalID = 0x01U;
-  pSpInDesc->wTerminalType = 0x0101U;
-  pSpInDesc->bAssocTerminal = 0x00U;
-  pSpInDesc->bNrChannels = 0x01U;
-  pSpInDesc->wChannelConfig = 0x0000U;
-  pSpInDesc->iChannelNames = 0x00U;
-  pSpInDesc->iTerminal = 0x00U;
-  *Sze += (uint32_t)sizeof(USBD_SpeakerInDescTypeDef);
+  uint32_t headerSize=		  (uint32_t)sizeof(USBD_AUDIOHeaderFuncDescTypedef)+\
+		  (uint32_t)sizeof(USBD_AUDIOClockSourceDescTypedef)+\
+		  (uint32_t)sizeof(USBD_AUDIOInputTerminalDescTypedef)+\
+		  (uint32_t)sizeof(USBD_AUDIOFeatureUnitDescTypedef)+\
+		  (uint32_t)sizeof(USBD_AUDIOOutputTerminalDescTypedef)+\
+		  (uint32_t)sizeof(USBD_AUDIOInputTerminalDescTypedef)+\
+		  (uint32_t)sizeof(USBD_AUDIOFeatureUnitDescTypedef)+\
+		  (uint32_t)sizeof(USBD_AUDIOOutputTerminalDescTypedef);
 
-  /*Append USB Speaker Audio Feature Unit Descriptor to Configuration descriptor */
-  pSpFDesc = ((USBD_SpeakerFeatureDescTypeDef *)(pConf + *Sze));
-  pSpFDesc->bLength = (uint8_t)sizeof(USBD_SpeakerFeatureDescTypeDef);
-  pSpFDesc->bDescriptorType = AUDIO_INTERFACE_DESCRIPTOR_TYPE;
-  pSpFDesc->bDescriptorSubtype = AUDIO_CONTROL_FEATURE_UNIT;
-  pSpFDesc->bUnitID = AUDIO_OUT_STREAMING_CTRL;
-  pSpFDesc->bSourceID = 0x01U;
-  pSpFDesc->bControlSize = 0x01U;
-  pSpFDesc->bmaControls = AUDIO_CONTROL_MUTE;
-  pSpFDesc->iTerminal = 0x00U;
-  *Sze += (uint32_t)sizeof(USBD_SpeakerFeatureDescTypeDef);
 
-  /*Append USB Speaker Output Terminal Descriptor to Configuration descriptor*/
-  pSpOutDesc = ((USBD_SpeakerOutDescTypeDef *)(pConf + *Sze));
-  pSpOutDesc->bLength = (uint8_t)sizeof(USBD_SpeakerOutDescTypeDef);
-  pSpOutDesc->bDescriptorType = AUDIO_INTERFACE_DESCRIPTOR_TYPE;
-  pSpOutDesc->bDescriptorSubtype = AUDIO_CONTROL_OUTPUT_TERMINAL;
-  pSpOutDesc->bTerminalID = 0x03U;
-  pSpOutDesc->wTerminalType = 0x0301U;
-  pSpOutDesc->bAssocTerminal = 0x00U;
-  pSpOutDesc->bSourceID = 0x02U;
-  pSpOutDesc->iTerminal = 0x00U;
-  *Sze += (uint32_t)sizeof(USBD_SpeakerOutDescTypeDef);
+/* Header Functional Descriptor*/
+  pHeadDesc = ((USBD_AUDIOHeaderFuncDescTypedef *)((uint32_t)pConf + *Sze));
+  pHeadDesc->bLength = (uint8_t)sizeof(USBD_AUDIOHeaderFuncDescTypedef);
+  pHeadDesc->bDescriptorType = 0x24U;
+  pHeadDesc->bDescriptorSubtype = 0x01U;
+  pHeadDesc->bcdADC = 0x0200;//2.0
+  pHeadDesc->bCategory =0x08;//io box
+  pHeadDesc->wTotalLength =headerSize;//check
+  pHeadDesc->bmControls =0;
+  *Sze += (uint32_t)sizeof(USBD_AUDIOHeaderFuncDescTypedef);
 
-  /* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwidth */
-  /* Interface 1, Alternate Setting 0*/
-  __USBD_CMPSIT_SET_IF(pdev->tclasslist[pdev->classId].Ifs[1], 0U, 0U, USB_DEVICE_CLASS_AUDIO, \
-                       AUDIO_SUBCLASS_AUDIOSTREAMING, AUDIO_PROTOCOL_UNDEFINED, 0U);
+  /* Audio clock source Descriptor*/
+  pClockDesc = ((USBD_AUDIOClockSourceDescTypedef *)((uint32_t)pConf + *Sze));
+  pClockDesc->bLength=(uint8_t)sizeof(USBD_AUDIOClockSourceDescTypedef);
+  pClockDesc->bDescriptorType=0x24;
+  pClockDesc->bDescriptorSubtype=0xA;
+  pClockDesc->bClockID=0x18;
+  pClockDesc->bmAttributes=0x01;
+  pClockDesc->bmControls=0x01;
+  pClockDesc->bAssocTerminal=0x0;
+  pClockDesc->iClockSource=0;
 
-  /* USB Speaker Standard AS Interface Descriptor -Audio Streaming Operational */
-  /* Interface 1, Alternate Setting 1*/
-  __USBD_CMPSIT_SET_IF(pdev->tclasslist[pdev->classId].Ifs[1], 0x01U, 0x01U, USB_DEVICE_CLASS_AUDIO, \
-                       AUDIO_SUBCLASS_AUDIOSTREAMING, AUDIO_PROTOCOL_UNDEFINED, 0U);
+  *Sze += (uint32_t)sizeof(USBD_AUDIOClockSourceDescTypedef);
 
-  /* USB Speaker Audio Streaming Interface Descriptor */
-  pSpStrDesc = ((USBD_SpeakerStreamIfDescTypeDef *)(pConf + *Sze));
-  pSpStrDesc->bLength = (uint8_t)sizeof(USBD_SpeakerStreamIfDescTypeDef);
-  pSpStrDesc->bDescriptorType = AUDIO_INTERFACE_DESCRIPTOR_TYPE;
-  pSpStrDesc->bDescriptorSubtype = AUDIO_STREAMING_GENERAL;
-  pSpStrDesc->bTerminalLink = 0x01U;
-  pSpStrDesc->bDelay = 0x01U;
-  pSpStrDesc->wFormatTag = 0x0001U;
-  *Sze += (uint32_t)sizeof(USBD_SpeakerStreamIfDescTypeDef);
+  /* Audio input terminal Descriptor*/
+  pInputTerminalDesc= ((USBD_AUDIOInputTerminalDescTypedef *)((uint32_t)pConf + *Sze));
+  pInputTerminalDesc->bLength=(uint8_t)sizeof(USBD_AUDIOInputTerminalDescTypedef);
+  pInputTerminalDesc->bDescriptorType=0x24;
+  pInputTerminalDesc->bDescriptorSubtype=0x2;
+  pInputTerminalDesc->bTerminalID=0x12;
+  pInputTerminalDesc->wTerminalType =0x0101;
+  pInputTerminalDesc->bAssocTerminal=0x0;
+  pInputTerminalDesc->bCSourceID =0x18;
+  pInputTerminalDesc->bNrChannels =2;
+  pInputTerminalDesc->bmChannelConfig=0x03;
+  pInputTerminalDesc->iChannelNames=0;
+  pInputTerminalDesc->bmControls=0x0;
+  pInputTerminalDesc->iTerminal=0; 
 
-  /* USB Speaker Audio Type III Format Interface Descriptor */
-  pSpIIIDesc = ((USBD_SpeakerIIIFormatIfDescTypeDef *)(pConf + *Sze));
-  pSpIIIDesc->bLength = (uint8_t)sizeof(USBD_SpeakerIIIFormatIfDescTypeDef);
-  pSpIIIDesc->bDescriptorType = AUDIO_INTERFACE_DESCRIPTOR_TYPE;
-  pSpIIIDesc->bDescriptorSubtype = AUDIO_STREAMING_FORMAT_TYPE;
-  pSpIIIDesc->bFormatType = AUDIO_FORMAT_TYPE_I;
-  pSpIIIDesc->bNrChannels = 0x02U;
-  pSpIIIDesc->bSubFrameSize = 0x02U;
-  pSpIIIDesc->bBitResolution = 16U;
-  pSpIIIDesc->bSamFreqType = 1U;
-  pSpIIIDesc->tSamFreq2 = 0x80U;
-  pSpIIIDesc->tSamFreq1 = 0xBBU;
-  pSpIIIDesc->tSamFreq0 = 0x00U;
-  *Sze += (uint32_t)sizeof(USBD_SpeakerIIIFormatIfDescTypeDef);
+  *Sze += (uint32_t)sizeof(USBD_AUDIOInputTerminalDescTypedef);
 
-  /* Endpoint 1 - Standard Descriptor */
-  pSpEpDesc = ((USBD_SpeakerEndDescTypeDef *)(pConf + *Sze));
-  pSpEpDesc->bLength = 0x09U;
-  pSpEpDesc->bDescriptorType = USB_DESC_TYPE_ENDPOINT;
-  pSpEpDesc->bEndpointAddress = pdev->tclasslist[pdev->classId].Eps[0].add;
-  pSpEpDesc->bmAttributes = USBD_EP_TYPE_ISOC;
-  pSpEpDesc->wMaxPacketSize = (uint16_t)USBD_AUDIO_GetEpPcktSze(pdev, 0U, 0U);
-  pSpEpDesc->bInterval = 0x01U;
-  pSpEpDesc->bRefresh = 0x00U;
-  pSpEpDesc->bSynchAddress = 0x00U;
-  *Sze += 0x09U;
+  /* Audio feature unit Descriptor*/
+  pFeatureUnitDesc= ((USBD_AUDIOFeatureUnitDescTypedef *)((uint32_t)pConf + *Sze));
+  pFeatureUnitDesc->bLength=(uint8_t)sizeof(USBD_AUDIOFeatureUnitDescTypedef);
+  pFeatureUnitDesc->bDescriptorType=0x24;
+  pFeatureUnitDesc->bDescriptorSubtype=0x6;
+  pFeatureUnitDesc->bUnitID=0x16;
+  pFeatureUnitDesc->bSourceID=0x12;
+  pFeatureUnitDesc->bmaControls0=0xF;//check
+  pFeatureUnitDesc->bmaControls1=0x0;
+  pFeatureUnitDesc->bmaControls2=0x0;
+  pFeatureUnitDesc->iFeature=0; 
 
-  /* Endpoint - Audio Streaming Descriptor*/
-  pSpEpStDesc = ((USBD_SpeakerEndStDescTypeDef *)(pConf + *Sze));
-  pSpEpStDesc->bLength = (uint8_t)sizeof(USBD_SpeakerEndStDescTypeDef);
-  pSpEpStDesc->bDescriptorType = AUDIO_ENDPOINT_DESCRIPTOR_TYPE;
-  pSpEpStDesc->bDescriptor = AUDIO_ENDPOINT_GENERAL;
-  pSpEpStDesc->bmAttributes = 0x00U;
-  pSpEpStDesc->bLockDelayUnits = 0x00U;
-  pSpEpStDesc->wLockDelay = 0x0000U;
-  *Sze += (uint32_t)sizeof(USBD_SpeakerEndStDescTypeDef);
+*Sze += (uint32_t)sizeof(USBD_AUDIOFeatureUnitDescTypedef);
+
+  /* Audio output terminal Descriptor*/
+pOutputTerminalDesc= ((USBD_AUDIOOutputTerminalDescTypedef *)((uint32_t)pConf + *Sze));
+
+  pOutputTerminalDesc->bLength=(uint8_t)sizeof(USBD_AUDIOOutputTerminalDescTypedef);
+  pOutputTerminalDesc->bDescriptorType=0x24;
+  pOutputTerminalDesc->bDescriptorSubtype=0x03;
+  pOutputTerminalDesc->bTerminalID=0x14;
+  pOutputTerminalDesc->wTerminalType=0x0301;
+  pOutputTerminalDesc->bAssocTerminal=0x0;
+  pOutputTerminalDesc->bSourceID=0x16;
+  pOutputTerminalDesc->bCSourceID=0x18;
+  pOutputTerminalDesc->bmControls=0x0;
+  pOutputTerminalDesc->iTerminal=0; 
+
+*Sze += (uint32_t)sizeof(USBD_AUDIOOutputTerminalDescTypedef);
+
+  /* Audio input terminal Descriptor*/
+  pInputTerminalDesc= ((USBD_AUDIOInputTerminalDescTypedef *)((uint32_t)pConf + *Sze));
+  pInputTerminalDesc->bLength=(uint8_t)sizeof(USBD_AUDIOInputTerminalDescTypedef);
+  pInputTerminalDesc->bDescriptorType=0x24;
+  pInputTerminalDesc->bDescriptorSubtype=0x2;
+  pInputTerminalDesc->bTerminalID=0x11;
+  pInputTerminalDesc->wTerminalType =0x0201;
+  pInputTerminalDesc->bAssocTerminal=0x0;
+  pInputTerminalDesc->bCSourceID =0x18;
+  pInputTerminalDesc->bNrChannels =2;
+  pInputTerminalDesc->bmChannelConfig=0x03;
+  pInputTerminalDesc->iChannelNames=0;
+  pInputTerminalDesc->bmControls=0x0;
+  pInputTerminalDesc->iTerminal=0; 
+
+  *Sze += (uint32_t)sizeof(USBD_AUDIOInputTerminalDescTypedef);
+
+
+  /* Audio feature unit Descriptor*/
+  pFeatureUnitDesc= ((USBD_AUDIOFeatureUnitDescTypedef *)((uint32_t)pConf + *Sze));
+  pFeatureUnitDesc->bLength=(uint8_t)sizeof(USBD_AUDIOFeatureUnitDescTypedef);
+  pFeatureUnitDesc->bDescriptorType=0x24;
+  pFeatureUnitDesc->bDescriptorSubtype=0x6;
+  pFeatureUnitDesc->bUnitID=0x15;
+  pFeatureUnitDesc->bSourceID=0x11;
+  pFeatureUnitDesc->bmaControls0=0xF;//check
+  pFeatureUnitDesc->bmaControls1=0x0;
+  pFeatureUnitDesc->bmaControls2=0x0;
+  pFeatureUnitDesc->iFeature=0; 
+
+*Sze += (uint32_t)sizeof(USBD_AUDIOFeatureUnitDescTypedef);
+
+  /* Audio output terminal Descriptor*/
+pOutputTerminalDesc= ((USBD_AUDIOOutputTerminalDescTypedef *)((uint32_t)pConf + *Sze));
+
+  pOutputTerminalDesc->bLength=(uint8_t)sizeof(USBD_AUDIOOutputTerminalDescTypedef);
+  pOutputTerminalDesc->bDescriptorType=0x24;
+  pOutputTerminalDesc->bDescriptorSubtype=0x03;
+  pOutputTerminalDesc->bTerminalID=0x13;
+  pOutputTerminalDesc->wTerminalType=0x0101;
+  pOutputTerminalDesc->bAssocTerminal=0x0;
+  pOutputTerminalDesc->bSourceID=0x15;
+  pOutputTerminalDesc->bCSourceID=0x18;
+  pOutputTerminalDesc->bmControls=0x0;
+  pOutputTerminalDesc->iTerminal=0; 
+*Sze += (uint32_t)sizeof(USBD_AUDIOOutputTerminalDescTypedef);
+
+  __USBD_CMPSIT_SET_IF(pdev->tclasslist[pdev->classId].Ifs[1], 0U, 0U, 0x01, 0x02, 0x020, 0U);
+  __USBD_CMPSIT_SET_IF(pdev->tclasslist[pdev->classId].Ifs[1], 1U, 1U, 0x01, 0x02, 0x020, 0U);
+
+  /* Audio 20 AS Interface Descriptor*/
+  pAsInterfaceDesc= ((USBD_AUDIO20ASInterfaceDescTypedef *)((uint32_t)pConf + *Sze));
+  pAsInterfaceDesc->bLength=(uint8_t)sizeof(USBD_AUDIO20ASInterfaceDescTypedef);
+  pAsInterfaceDesc->bDescriptorType=0x24;
+  pAsInterfaceDesc->bDescriptorSubtype=0x1;
+  pAsInterfaceDesc->bTerminalLink=0x12;
+  pAsInterfaceDesc->bmControls=0x0;
+  pAsInterfaceDesc->bFormatType=0x1;
+  pAsInterfaceDesc->bmFormats=0x1;
+  pAsInterfaceDesc->bNrChannels=2;
+  pAsInterfaceDesc->bmChannelConfig=0x03;
+  pAsInterfaceDesc->iChannelNames=0;
+*Sze += (uint32_t)sizeof(USBD_AUDIO20ASInterfaceDescTypedef);
+
+  /* Audio 20 as format type Descriptor*/
+  pAsFormatTypeDesc= ((USBD_AUDIO20ASFormatTypeDescTypedef *)((uint32_t)pConf + *Sze));
+  pAsFormatTypeDesc->bLength=(uint8_t)sizeof(USBD_AUDIO20ASFormatTypeDescTypedef);
+  pAsFormatTypeDesc->bDescriptorType=0x24;
+  pAsFormatTypeDesc->bDescriptorSubtype=0x2;
+  pAsFormatTypeDesc->bFormatType=0x1;
+  pAsFormatTypeDesc->bSubslotSize=2;
+  pAsFormatTypeDesc->bBitResolution=16;
+
+*Sze += (uint32_t)sizeof(USBD_AUDIO20ASFormatTypeDescTypedef);
+
+  /* Append Endpoint descriptor to Configuration descriptor *///out
+  __USBD_CMPSIT_SET_EP((pdev->tclasslist[pdev->classId].Eps[0].add), (USBD_EP_TYPE_ISOC), (pdev->tclasslist[pdev->classId].CurrPcktSze), (1U), (1U));
+
+  pAsEndpointDesc= ((USBD_AUDIO20ASEndpointDescTypedef *)((uint32_t)pConf + *Sze));
+  pAsEndpointDesc->bLength=(uint8_t)sizeof(USBD_AUDIO20ASEndpointDescTypedef);
+  pAsEndpointDesc->bDescriptorType=0x25;
+  pAsEndpointDesc->bDescriptorSubtype=0x1;
+  pAsEndpointDesc->bmAttributes=0;
+  pAsEndpointDesc->bmControl=0;
+  pAsEndpointDesc->bLockDelayUnits=0;
+  pAsEndpointDesc->wLockDelay=0;
+  *Sze += (uint32_t)sizeof(USBD_AUDIO20ASEndpointDescTypedef);
+
+  __USBD_CMPSIT_SET_IF(pdev->tclasslist[pdev->classId].Ifs[2], 0U, 0U, 0x01, 0x02, 0x020, 0U);
+  __USBD_CMPSIT_SET_IF(pdev->tclasslist[pdev->classId].Ifs[2], 1U, 1U, 0x01, 0x02, 0x020, 0U);
+
+  /* Audio 20 AS Interface Descriptor*/
+  pAsInterfaceDesc= ((USBD_AUDIO20ASInterfaceDescTypedef *)((uint32_t)pConf + *Sze));
+  pAsInterfaceDesc->bLength=(uint8_t)sizeof(USBD_AUDIO20ASInterfaceDescTypedef);
+  pAsInterfaceDesc->bDescriptorType=0x24;
+  pAsInterfaceDesc->bDescriptorSubtype=0x1;
+  pAsInterfaceDesc->bTerminalLink=0x13;
+  pAsInterfaceDesc->bmControls=0x0;
+  pAsInterfaceDesc->bFormatType=0x1;
+  pAsInterfaceDesc->bmFormats=0x1;
+  pAsInterfaceDesc->bNrChannels=2;
+  pAsInterfaceDesc->bmChannelConfig=0x03;
+  pAsInterfaceDesc->iChannelNames=0;
+*Sze += (uint32_t)sizeof(USBD_AUDIO20ASInterfaceDescTypedef);
+
+  /* Audio 20 as format type Descriptor*/
+  pAsFormatTypeDesc= ((USBD_AUDIO20ASFormatTypeDescTypedef *)((uint32_t)pConf + *Sze));
+  pAsFormatTypeDesc->bLength=(uint8_t)sizeof(USBD_AUDIO20ASFormatTypeDescTypedef);
+  pAsFormatTypeDesc->bDescriptorType=0x24;
+  pAsFormatTypeDesc->bDescriptorSubtype=0x2;
+  pAsFormatTypeDesc->bFormatType=0x1;
+  pAsFormatTypeDesc->bSubslotSize=2;
+  pAsFormatTypeDesc->bBitResolution=16;
+*Sze += (uint32_t)sizeof(USBD_AUDIO20ASFormatTypeDescTypedef);
+
+  /* Append Endpoint descriptor to Configuration descriptor *///out
+  __USBD_CMPSIT_SET_EP((pdev->tclasslist[pdev->classId].Eps[1].add), (USBD_EP_TYPE_ISOC), (pdev->tclasslist[pdev->classId].CurrPcktSze), (1U), (1U));
+
+  pAsEndpointDesc= ((USBD_AUDIO20ASEndpointDescTypedef *)((uint32_t)pConf + *Sze));
+  pAsEndpointDesc->bLength=(uint8_t)sizeof(USBD_AUDIO20ASEndpointDescTypedef);
+  pAsEndpointDesc->bDescriptorType=0x25;
+  pAsEndpointDesc->bDescriptorSubtype=0x1;
+  pAsEndpointDesc->bmAttributes=0;
+  pAsEndpointDesc->bmControl=0;
+  pAsEndpointDesc->bLockDelayUnits=0;
+  pAsEndpointDesc->wLockDelay=0;
+  *Sze += (uint32_t)sizeof(USBD_AUDIO20ASEndpointDescTypedef);
 
   /* Update Config Descriptor and IAD descriptor */
-  ((USBD_ConfigDescTypeDef *)pConf)->bNumInterfaces += 2U;
+  ((USBD_ConfigDescTypeDef *)pConf)->bNumInterfaces += 3U;
   ((USBD_ConfigDescTypeDef *)pConf)->wTotalLength = (uint16_t)(*Sze);
 }
 #endif /* USBD_CMPSIT_ACTIVATE_AUDIO */

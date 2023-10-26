@@ -485,7 +485,10 @@ static uint8_t USBD_AUDIO_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 
 #ifdef USE_USBD_COMPOSITE
   /* Get the Endpoints addresses allocated for this class instance */
-  AUDIOOutEpAdd = USBD_CoreGetEPAdd(pdev, USBD_EP_OUT, USBD_EP_TYPE_ISOC, (uint8_t)pdev->classId);
+  AUDIOOutEpAdd = USBD_CoreGetEPAdd(pdev, USBD_EP_IN, USBD_EP_TYPE_ISOC, (uint8_t)pdev->classId);
+  if(AUDIOOutEpAdd==0xff){
+    while(1);
+  }
 #endif /* USE_USBD_COMPOSITE */
 
   if (pdev->dev_speed == USBD_SPEED_HIGH)
@@ -499,7 +502,7 @@ static uint8_t USBD_AUDIO_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 
   /* Open EP OUT */
   (void)USBD_LL_OpenEP(pdev, AUDIOOutEpAdd, USBD_EP_TYPE_ISOC, AUDIO_OUT_PACKET);
-  pdev->ep_out[AUDIOOutEpAdd & 0xFU].is_used = 1U;
+  pdev->ep_in[AUDIOOutEpAdd & 0xFU].is_used = 1U;
 
   haudio->alt_setting = 0U;
   haudio->offset = AUDIO_OFFSET_UNKNOWN;
@@ -516,8 +519,8 @@ static uint8_t USBD_AUDIO_Init(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
   }
 
   /* Prepare Out endpoint to receive 1st packet */
-  (void)USBD_LL_PrepareReceive(pdev, AUDIOOutEpAdd, haudio->buffer,
-                               AUDIO_OUT_PACKET);
+  // (void)USBD_LL_PrepareReceive(pdev, AUDIOOutEpAdd, haudio->buffer,
+  //                              AUDIO_OUT_PACKET);
 
   return (uint8_t)USBD_OK;
 }
@@ -540,8 +543,8 @@ static uint8_t USBD_AUDIO_DeInit(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 
   /* Open EP OUT */
   (void)USBD_LL_CloseEP(pdev, AUDIOOutEpAdd);
-  pdev->ep_out[AUDIOOutEpAdd & 0xFU].is_used = 0U;
-  pdev->ep_out[AUDIOOutEpAdd & 0xFU].bInterval = 0U;
+  pdev->ep_in[AUDIOOutEpAdd & 0xFU].is_used = 0U;
+  pdev->ep_in[AUDIOOutEpAdd & 0xFU].bInterval = 0U;
 
   /* DeInit  physical Interface components */
   if (pdev->pClassDataCmsit[pdev->classId] != NULL)
