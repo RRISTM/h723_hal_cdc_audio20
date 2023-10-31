@@ -242,7 +242,7 @@
 /* endpoint& streaming interface numbers definitions*/
 #ifdef USE_USB_AUDIO_PLAYPBACK
 #define USBD_AUDIO_CONFIG_PLAY_SA_INTERFACE              0x03 /* AUDIO STREAMING INTERFACE NUMBER FOR PLAY SESSION */
-#define USBD_AUDIO_CONFIG_PLAY_EP_OUT                    0x01
+#define USBD_AUDIO_CONFIG_PLAY_EP_OUT                    0x03
 #ifdef USE_AUDIO_PLAYBACK_USB_FEEDBACK   
 #define USB_AUDIO_CONFIG_PLAY_EP_SYNC                    0x85
 #ifdef USE_USB_AUDIO_CLASS_10

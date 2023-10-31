@@ -245,11 +245,12 @@ static int8_t  AUDIO_MicGetVolumeDefaultsValues( int* vol_max, int* vol_min, int
 
 uint32_t AUDIO_GetPacketLength(){
     if ((micStart==1)&&(current_mic->node.state == AUDIO_NODE_STARTED)){
-      return current_mic->packet_length;
-
-    }else{
-      return 0;
+        if ( AUDIO_BUFFER_FREE_SIZE(current_mic->buf)>current_mic->packet_length)
+        {
+          return current_mic->packet_length;
+        }
     }
+      return 0;
 }
 
 uint32_t AUDIO_SendINData(uint8_t* buffer,uint32_t length){
@@ -262,7 +263,7 @@ uint32_t AUDIO_SendINData(uint8_t* buffer,uint32_t length){
       current_mic->node.session_handle->SessionCallback(AUDIO_OVERRUN, (AUDIO_NodeTypeDef *)current_mic,
                                                         current_mic->node.session_handle);
     }
-    memcpy(current_mic->buf->wr_ptr,buffer, current_mic->packet_length);
+    memcpy((uint16_t*)(current_mic->buf->data+current_mic->buf->wr_ptr),buffer, current_mic->packet_length);
     /* check for overflow */
     current_mic->buf->wr_ptr += current_mic->packet_length;
 

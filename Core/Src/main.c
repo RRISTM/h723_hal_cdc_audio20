@@ -43,8 +43,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t bufferIn[192*2*2*2]={0x123};
+uint16_t bufferIn[192]={0};
 uint32_t bufferLen=0;
+uint16_t valueIn=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -85,6 +86,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -105,11 +107,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    bufferLen=AUDIO_GetPacketLength();
+    bufferLen=AUDIO_GetPacketLength();//check if we have space in buffer
     if(bufferLen>0){
-
-     AUDIO_SendINData(bufferIn,bufferLen);
+      bufferIn[0]=valueIn;//marks in buffer to check them in usb analyzer
+      bufferIn[95]=valueIn+1;
+      bufferIn[96]=valueIn+2;
+      bufferIn[191]=valueIn+3;
+      AUDIO_SendINData(bufferIn,bufferLen);//send new data if buffer have space
+      valueIn++;
     }
+
+    AUDIO_GetSpeakerData();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

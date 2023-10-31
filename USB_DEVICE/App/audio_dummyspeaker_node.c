@@ -104,6 +104,25 @@ static AUDIO_Speaker_NodeTypeDef *current_speaker = 0;
   return 0;
 }
 
+#define BUFFER_OUT_SIZE 280*1024
+volatile uint8_t storeBuffer[BUFFER_OUT_SIZE];
+uint32_t pointer;
+
+uint32_t AUDIO_GetSpeakerData(uint16_t* data){
+    if(current_speaker->node.state == AUDIO_NODE_STARTED){
+      uint16_t wr_distance = AUDIO_BUFFER_FILLED_SIZE(current_speaker->buf);
+      if(wr_distance>192){
+        if(pointer<(BUFFER_OUT_SIZE-192)){
+          memcpy(&storeBuffer[pointer],(uint16_t*)(current_speaker->buf->data+current_speaker->buf->rd_ptr),current_speaker->packet_length);
+          pointer+=current_speaker->packet_length;
+        }
+        return AUDIO_SpeakerUpdateBuffer();
+      }
+    }
+    return 0;
+}
+
+
 /**
   * @brief  AUDIO_SpeakerUpdateBuffer
   *         read a packet from the buffer.
@@ -121,7 +140,7 @@ static uint16_t AUDIO_SpeakerUpdateBuffer(void)
     /* if speaker was started prepare next data */
     if(current_speaker->node.state == AUDIO_NODE_STARTED)
     {
-     
+
       /* inform session that a packet is played */
       current_speaker->node.session_handle->SessionCallback(AUDIO_PACKET_PLAYED, (AUDIO_NodeTypeDef*)current_speaker, 
                                                             current_speaker->node.session_handle);
