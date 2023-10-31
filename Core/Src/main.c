@@ -43,7 +43,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t bufferIn[192*2*2*2]={0x123};
+uint32_t bufferLen=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,6 +57,15 @@ static void MX_GPIO_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+/**
+  * @brief  This function is executed in case of an error occurrence in Audio Class.
+  * @param  None
+  * @retval None
+  */
+void USBD_error_handler(void)
+{
+Error_Handler();
+}
 /* USER CODE END 0 */
 
 /**
@@ -95,6 +105,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    bufferLen=AUDIO_GetPacketLength();
+    if(bufferLen>0){
+
+     AUDIO_SendINData(bufferIn,bufferLen);
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

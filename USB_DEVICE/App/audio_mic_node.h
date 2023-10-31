@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    usbd_audio_if.h
+  * @file    audio_mic_node.h
   * @author  MCD Application Team
   * @version V1.2.0RC3
   * @date    6-January-2018
-  * @brief   Header for usbd_audio_if.c file.
+  * @brief   header file for the audio_mic_node.c file.
   ******************************************************************************
   * @attention
   *
@@ -43,31 +43,70 @@
   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */ 
-
+  */
+ 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_AUDIO_IF_H
-#define __USBD_AUDIO_IF_H
+#ifndef __AUDIO_DEVICES_NODES_H
+#define __AUDIO_DEVICES_NODES_H
+
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "usbd_audio.h"
-#include "audio_sessions_usb.h"
+#ifndef USE_AUDIO_DUMMY_MIC
+#include "audio_user_devices.h"
+#endif /* USE_AUDIO_DUMMY_MIC */
+#include  "audio_node.h"
+#include "usb_audio_user.h"
 
 /* Exported constants --------------------------------------------------------*/
- extern USBD_AUDIO_InterfaceCallbacksfTypeDef audio_class_interface;
+#ifdef USE_AUDIO_DUMMY_MIC
+#define  AUDIO_MicInit AUDIO_DUMMY_MicInit
+#else /* USE_AUDIO_DUMMY_MIC */
+#define  AUDIO_MicInit AUDIO_USER_MicInit
+#endif /* USE_AUDIO_DUMMY_MIC */
 /* Exported types ------------------------------------------------------------*/
-#ifdef USE_AUDIO_USB_INTERRUPT
-typedef enum 
+/* mic node */
+#ifdef USE_AUDIO_DUMMY_MIC
+typedef struct
 {
-  USBD_AUDIO_PLAYBACK  = 0x01,
-  USBD_AUDIO_RECORD    = 0x02
-}USBD_AUDIO_FunctionTypedef;
-#endif /* USE_AUDIO_USB_INTERRUPT*/
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
-#ifdef USE_AUDIO_USB_INTERRUPT
-int8_t USBD_AUDIO_ExecuteControl( uint8_t func, AUDIO_ControlCommandTypedef control , uint32_t val , uint32_t private_data);
-#endif /* USE_AUDIO_USB_INTERRUPT*/
-#endif /* __USBD_AUDIO_IF_H */
+  int8_t dummy;
+}AUDIO_Mic_SpecificTypeDef;
+#endif /* USE_AUDIO_DUMMY_MIC */
 
+typedef struct
+{
+  AUDIO_NodeTypeDef node;
+  AUDIO_BufferTypeDef *buf;
+  uint16_t packet_length; /* packet maximal length */
+  uint8_t volume;
+  int8_t  (*MicDeInit)  (uint32_t /*node_handle*/);
+  int8_t  (*MicStart)   (AUDIO_BufferTypeDef* /*buffer*/ , uint32_t /*node handle*/);
+  int8_t  (*MicStop)    ( uint32_t /*node handle*/);
+  int8_t  (*MicChangeFrequence)    ( uint32_t /*node handle*/);
+  int8_t  (*MicMute)     (uint16_t /*channel_number*/, uint8_t /*mute */,uint32_t /*node handle*/);
+  int8_t  (*MicSetVolume)    ( uint16_t /*channel_number*/, int /*volume_db_256 */, uint32_t /*node handle*/);
+  int8_t  (*MicGetVolumeDefaultsValues)    ( int* /*vol_max*/, int* /*vol_min*/,int* /*vol_res*/, uint32_t /*node handle*/);
+#ifdef USE_AUDIO_RECORDING_USB_IMPLECIT_SYNCHRO 
+  int8_t  (*MicStartReadCount)     (uint32_t /*node handle*/);
+  uint16_t  (*MicGetReadCount)    (  uint32_t /*node handle*/);
+#endif /* USE_AUDIO_RECORDING_USB_IMPLECIT_SYNCHRO*/
+  AUDIO_Mic_SpecificTypeDef specific;
+}
+AUDIO_Mic_NodeTypeDef;
+
+/* Exported macros -----------------------------------------------------------*/
+/* Exported functions ------------------------------------------------------- */
+#ifdef USE_AUDIO_MEMS_MIC
+
+#endif /* USE_AUDIO_MEMS_MIC */
+ int8_t  AUDIO_MicInit(AUDIO_DescriptionTypeDef* audio_description, AUDIO_SessionTypeDef* session_handle,  uint32_t node_handle);
+
+ uint32_t AUDIO_GetPacketLength();
+uint32_t AUDIO_SendINData(uint8_t* buffer,uint32_t length);
+#ifdef __cplusplus
+}
+#endif
+#endif  /* __AUDIO_DEVICES_NODES_H */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

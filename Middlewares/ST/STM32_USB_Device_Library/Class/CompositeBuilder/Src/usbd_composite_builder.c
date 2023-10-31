@@ -473,11 +473,11 @@ uint8_t  USBD_CMPSIT_AddToConfDesc(USBD_HandleTypeDef *pdev)
 #if USBD_CMPSIT_ACTIVATE_AUDIO == 1
     case CLASS_TYPE_AUDIO:
       /* Setup Max packet sizes*/
-      pdev->tclasslist[pdev->classId].CurrPcktSze = USBD_AUDIO_GetEpPcktSze(pdev, 0U, 0U);
+      pdev->tclasslist[pdev->classId].CurrPcktSze = 384; //USBD_AUDIO_GetEpPcktSze(pdev, 0U, 0U);
 
       /* Find the first available interface slot and Assign number of interfaces */
       idxIf = USBD_CMPSIT_FindFreeIFNbr(pdev);
-      pdev->tclasslist[pdev->classId].NumIf = 2U;
+      pdev->tclasslist[pdev->classId].NumIf = 3U;
       pdev->tclasslist[pdev->classId].Ifs[0] = idxIf;
       pdev->tclasslist[pdev->classId].Ifs[1] = (uint8_t)(idxIf + 1U);
       pdev->tclasslist[pdev->classId].Ifs[2] = (uint8_t)(idxIf + 2U);
@@ -1182,7 +1182,7 @@ static void  USBD_CMPSIT_AUDIODesc(USBD_HandleTypeDef *pdev, uint32_t pConf, __I
   pHeadDesc->bDescriptorType = 0x24U;
   pHeadDesc->bDescriptorSubtype = 0x01U;
   pHeadDesc->bcdADC = 0x0200;//2.0
-  pHeadDesc->bCategory =0x08;//io box
+  pHeadDesc->bCategory =0x04;//headset
   pHeadDesc->wTotalLength =headerSize;//check
   pHeadDesc->bmControls =0;
   *Sze += (uint32_t)sizeof(USBD_AUDIOHeaderFuncDescTypedef);

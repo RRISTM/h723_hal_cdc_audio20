@@ -35,7 +35,7 @@
 #include "stm32h7xx_hal.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "hal_usb_ex.h"
 /* USER CODE END INCLUDE */
 
 /** @addtogroup USBD_OTG_DRIVER
@@ -93,10 +93,10 @@
 /* Memory management macros make sure to use static memory allocation */
 /** Alias for memory allocation. */
 
-#define USBD_malloc         (void *)USBD_static_malloc
+#define USBD_malloc         (void *)malloc
 
 /** Alias for memory release. */
-#define USBD_free           USBD_static_free
+#define USBD_free           free
 
 /** Alias for memory set. */
 #define USBD_memset         memset
@@ -155,6 +155,8 @@
 void *USBD_static_malloc(uint32_t size);
 void USBD_static_free(void *p);
 
+
+void USBD_error_handler(void);
 /**
   * @}
   */
