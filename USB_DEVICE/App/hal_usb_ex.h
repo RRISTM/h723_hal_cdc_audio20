@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    usbd_audio_if.h
+  * @file    hal_usb_interface_extension
   * @author  MCD Application Team
   * @version V1.2.0RC3
   * @date    6-January-2018
-  * @brief   Header for usbd_audio_if.c file.
+  * @brief   This file 
   ******************************************************************************
   * @attention
   *
@@ -43,31 +43,63 @@
   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */ 
-
+  */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_AUDIO_IF_H
-#define __USBD_AUDIO_IF_H
+#ifndef __HAL_USB_INTERFACE_EXTENSION
+#define __HAL_USB_INTERFACE_EXTENSION
+
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "usbd_audio.h"
-#include "audio_sessions_usb.h"
+#include "stm32h7xx_ll_usb.h"
+#ifdef USE_USB_FS_INTO_HS
+#define USB_OTG_BASE_ADDRESS  USB_OTG_HS  
+#else
+#ifdef USE_USB_FS
+#define USB_OTG_BASE_ADDRESS  USB_OTG_FS   
+#endif 
+#ifdef USE_USB_HS
+#define USB_OTG_BASE_ADDRESS  USB_OTG_HS   
+#endif
+#endif
 
-/* Exported constants --------------------------------------------------------*/
- extern USBD_AUDIO_InterfaceCallbacksfTypeDef audio_class_interface;
-/* Exported types ------------------------------------------------------------*/
-#ifdef USE_AUDIO_USB_INTERRUPT
-typedef enum 
-{
-  USBD_AUDIO_PLAYBACK  = 0x01,
-  USBD_AUDIO_RECORD    = 0x02
-}USBD_AUDIO_FunctionTypedef;
-#endif /* USE_AUDIO_USB_INTERRUPT*/
-/* Exported macro ------------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
-#ifdef USE_AUDIO_USB_INTERRUPT
-int8_t USBD_AUDIO_ExecuteControl( uint8_t func, AUDIO_ControlCommandTypedef control , uint32_t val , uint32_t private_data);
-#endif /* USE_AUDIO_USB_INTERRUPT*/
-#endif /* __USBD_AUDIO_IF_H */
+/* MACRO ------------------------------------------------------------------*/  
+#define USB_DIEPCTL(ep_addr) ((USB_OTG_INEndpointTypeDef *)((uint32_t)USB_OTG_BASE_ADDRESS + USB_OTG_IN_ENDPOINT_BASE   \
+        + (ep_addr&0x7FU)*USB_OTG_EP_REG_SIZE))->DIEPCTL
+#define USB_DOEPCTL(ep_addr) ((USB_OTG_OUTEndpointTypeDef *)((uint32_t)USB_OTG_BASE_ADDRESS +  \
+      USB_OTG_OUT_ENDPOINT_BASE + (ep_addr)*USB_OTG_EP_REG_SIZE))->DOEPCTL
 
+#define USB_CLEAR_INCOMPLETE_IN_EP(ep_addr)     if((((ep_addr) & 0x80U) == 0x80U)){  \
+            USB_DIEPCTL(ep_addr) |= (USB_OTG_DIEPCTL_EPDIS | USB_OTG_DIEPCTL_SNAK);  \
+                                         };
+                                         
+#define USB_CLEAN_EP_AFTER_CLOSE(ep_addr)\
+if((((ep_addr) & 0x80U) == 0x80U))\
+  {\
+   USB_DIEPCTL(ep_addr)&= ~ (USB_OTG_DIEPCTL_USBAEP|   \
+                            USB_OTG_DIEPCTL_MPSIZ|    \
+                            USB_OTG_DIEPCTL_TXFNUM|  \
+                            USB_OTG_DIEPCTL_EPTYP);    \
+   }\
+  else\
+  {\
+    USB_DOEPCTL(ep_addr)&= ~(USB_OTG_DOEPCTL_USBAEP| \
+                    USB_OTG_DOEPCTL_MPSIZ); \
+  } ;
+                                         
+#define USB_SOF_NUMBER() ((((USB_OTG_DeviceTypeDef *)((uint32_t )USB_OTG_BASE_ADDRESS + USB_OTG_DEVICE_BASE))->DSTS&USB_OTG_DSTS_FNSOF)>>USB_OTG_DSTS_FNSOF_Pos)
+
+
+
+#define IS_ISO_IN_INCOMPLETE_EP(ep_addr,current_sof, transmit_soffn) ((USB_DIEPCTL(ep_addr)&USB_OTG_DIEPCTL_EPENA_Msk)&&\
+                                                          (((current_sof&0x01) == ((USB_DIEPCTL(ep_addr)&USB_OTG_DIEPCTL_EONUM_DPID_Msk)>>USB_OTG_DIEPCTL_EONUM_DPID_Pos))\
+                                                            ||(current_sof== ((transmit_soffn+2)&0x7FF))))
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif  /* __HAL_USB_INTERFACE_EXTENSION*/  
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

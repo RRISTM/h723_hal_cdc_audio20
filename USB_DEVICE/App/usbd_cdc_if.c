@@ -45,8 +45,8 @@
 #include "usbd_cdc_if.h"
 //#include "cat_driver.h"
 #include "usb_device.h"
-#include "usbd_composite.h"
-#include "usbd_composite_desc.h"
+//#include "usbd_composite.h"
+//#include "usbd_composite_desc.h"
 
 /* USER CODE BEGIN INCLUDE */
 /* USER CODE END INCLUDE */
@@ -95,7 +95,7 @@
   * @{
   */
 
-extern USBD_HandleTypeDef hUsbDeviceFS;
+extern USBD_HandleTypeDef hUsbDeviceHS;
 
 /* Create buffer for reception and transmission           */
 /* It's up to user to redefine and/or remove those define */
@@ -187,8 +187,8 @@ static int8_t CDC_Init_FS(void)
 { 
   /* USER CODE BEGIN 3 */ 
   /* Set Application Buffers */
-  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
+  USBD_CDC_SetTxBuffer(&hUsbDeviceHS, UserTxBufferFS, 0,0);//IF 0 for CDC
+  USBD_CDC_SetRxBuffer(&hUsbDeviceHS, UserRxBufferFS);
   return (USBD_OK);
   /* USER CODE END 3 */ 
 }
@@ -312,8 +312,8 @@ static int8_t CDC_Receive_FS (uint8_t* Buf, uint32_t *Len)
 //        CatDriver_InterfaceBufferAddData(Buf[i]);
     }
 
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
-  USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+  USBD_CDC_SetRxBuffer(&hUsbDeviceHS, &Buf[0]);
+  USBD_CDC_ReceivePacket(&hUsbDeviceHS);
   return (USBD_OK);
   /* USER CODE END 6 */ 
 }
@@ -393,9 +393,9 @@ static void CDC_InitiateTransmit(USBD_HandleTypeDef *pdev)
 
     USBD_CDC_SetTxBuffer(pdev,
             &UserTxBufferFS[USB_Tx_ptr],
-            USB_Tx_length);
+            USB_Tx_length,0);//IF 0 for CDC
     /* Prepare the available data buffer to be sent on IN endpoint */
-    USBD_CDC_TransmitPacket(pdev);
+    USBD_CDC_TransmitPacket(pdev,0);//IF 0 for CDC
 
 }
 
