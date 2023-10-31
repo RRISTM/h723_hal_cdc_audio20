@@ -111,8 +111,8 @@ uint32_t pointer;
 uint32_t AUDIO_GetSpeakerData(uint16_t* data){
     if(current_speaker->node.state == AUDIO_NODE_STARTED){
       uint16_t wr_distance = AUDIO_BUFFER_FILLED_SIZE(current_speaker->buf);
-      if(wr_distance>192){
-        if(pointer<(BUFFER_OUT_SIZE-192)){
+      if(wr_distance>current_speaker->packet_length){
+        if(pointer<(BUFFER_OUT_SIZE-current_speaker->packet_length)){
           memcpy(&storeBuffer[pointer],(uint16_t*)(current_speaker->buf->data+current_speaker->buf->rd_ptr),current_speaker->packet_length);
           pointer+=current_speaker->packet_length;
         }

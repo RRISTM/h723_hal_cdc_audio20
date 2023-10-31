@@ -113,7 +113,7 @@ int main(void)
       bufferIn[95]=valueIn+1;
       bufferIn[96]=valueIn+2;
       bufferIn[191]=valueIn+3;
-      AUDIO_SendINData(bufferIn,bufferLen);//send new data if buffer have space
+      AUDIO_SendINData(bufferIn,bufferLen*2);//send new data if buffer have space
       valueIn++;
     }
 

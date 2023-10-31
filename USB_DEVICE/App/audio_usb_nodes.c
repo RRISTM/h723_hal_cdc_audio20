@@ -483,7 +483,7 @@ static int8_t  USB_AUDIO_Streaming_Input_DataReceived( uint16_t data_len, uint32
     }
    else
    {
-     Error_Handler();
+     //Error_Handler();
    }
    return 0;
  }
@@ -533,7 +533,7 @@ static uint8_t* USB_AUDIO_Streaming_Input_GetBuffer(uint32_t node_handle, uint16
   }
   else
   {
-    Error_Handler();
+    //Error_Handler();
     return 0; /* return statement non reachable */
   }
 }

@@ -427,7 +427,7 @@ static uint8_t  USBD_AUDIO_SetInterfaceAlternate(USBD_HandleTypeDef *pdev,uint8_
                  ep->max_packet_length);             
      ep->open = 1;
      ep->ep_usage = USBD_AUDIO_DATA_EP;
-     /* get usb working buffer */ 
+     /* get usb working buffer */
     ep->ep_description.data_ep->buf= ep->ep_description.data_ep->GetBuffer(ep->ep_description.data_ep->private_data,
                                                                            &ep->ep_description.data_ep->length);        
     
